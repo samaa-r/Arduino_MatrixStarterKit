@@ -1,0 +1,10 @@
+# VSCode
+.vscode
+
+# My build path
+build_*
+
+# Custom
+*copy*
+*test*
+x_*
