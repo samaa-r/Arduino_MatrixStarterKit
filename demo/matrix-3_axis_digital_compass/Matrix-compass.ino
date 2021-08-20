@@ -18,26 +18,13 @@ void setup()
 
   delay(100);
 
-  continuous_measurement_mode();
+  // continuous_measurement_mode();
+  single_measurement_mode();
 }
 
 void loop()
 {
 }
-
-/*
-Below is an example of a (power-on) initialization process for “continuous-measurement mode”:
-  1. Write CRA (00) – send 0x3C 0x00 0x70 (8-average, 15 Hz default, normal measurement)
-  2. Write CRB (01) – send 0x3C 0x01 0xA0 (Gain=5, or any other desired gain)
-  3. Write Mode (02) – send 0x3C 0x02 0x00 (Continuous-measurement mode)
-  4. Wait 6 ms or monitor status register or DRDY hardware interrupt pin
-  5.  Loop
-        Send 0x3D 0x06 (Read all 6 bytes. If gain is changed then this data set is using previous gain)
-        Convert three 16-bit 2’s compliment hex values to decimal values and assign to X, Z, Y, respectively.
-        Send 0x3C 0x03 (point to first data register 03)
-        Wait about 67 ms (if 15 Hz rate) or monitor status register or DRDY hardware interrupt pin
-      End_loop
-*/
 
 // Below is an example of a (power-on) initialization process for “continuous-measurement mode”
 void continuous_measurement_mode(void)
@@ -73,6 +60,71 @@ void continuous_measurement_mode(void)
     // print_hex(read_data, 6);
 
     // Convert three 16-bit 2’s compliment hex values to decimal values and assign to X, Z, Y, respectively.
+    data_X = ((read_data[0] << 8) | read_data[1]);
+    data_Z = ((read_data[2] << 8) | read_data[3]);
+    data_Y = ((read_data[4] << 8) | read_data[5]);
+
+    Serial.print("x: ");
+    Serial.print(data_X);
+    Serial.print(", y: ");
+    Serial.print(data_Y);
+    Serial.print(", z: ");
+    Serial.print(data_Z);
+    Serial.print("\n");
+
+    // Wait about 67 ms (if 15 Hz rate) or monitor status register or DRDY hardware interrupt pin.
+    delay(67);
+
+    delay(300); // For human read.
+  }
+}
+
+/*
+Below is an example of a (power-on) initialization process for “single-measurement mode”:
+  1. Write CRA (00) – send 0x3C 0x00 0x70 (8-average, 15 Hz default or any other rate, normal measurement)
+  2. Write CRB (01) – send 0x3C 0x01 0xA0 (Gain=5, or any other desired gain)
+  3. For each measurement query:
+    Write Mode (02) – send 0x3C 0x02 0x01 (Single-measurement mode)
+    Wait 6 ms or monitor status register or DRDY hardware interrupt pin
+    Send 0x3D 0x06 (Read all 6 bytes. If gain is changed then this data set is using previous gain)
+    Convert three 16-bit 2’s compliment hex values to decimal values and assign to X, Z, Y, respectively. 
+*/
+
+// Below is an example of a (power-on) initialization process for “single-measurement mode”
+void single_measurement_mode(void)
+{
+  // 1. Write CRA (0x00) – value 0x70 (8-average, 15 Hz default or any other rate, normal measurement)
+  // 2. Write CRB (0x01) – value 0xA0 (Gain=5, or any other desired gain)
+  uint8_t ary_cmd[] = {
+      0x70,
+      0xA0,
+  };
+  const int len = sizeof(ary_cmd) / sizeof(ary_cmd[0]);
+
+  // Point to first data register CRA (0x00).
+  I2C_WriteMultiBytesOneReg(ADDRESS_HMC5583, 0x00, ary_cmd, len);
+
+  // 3. For each measurement query:
+  uint8_t read_data[6] = {};
+  int16_t data_X = 0;
+  int16_t data_Y = 0;
+  int16_t data_Z = 0;
+  while (1)
+  {
+    //   Write Mode (0x02) – value 0x01 (Single-measurement mode)
+    // Point to first data register CRA (0x02).
+    I2C_WriteMultiBytesOneReg(ADDRESS_HMC5583, 0x02, 0x01, 1);
+
+    //   Wait 6 ms or monitor status register or DRDY hardware interrupt pin
+    delay(6);
+
+    // Read all 6 bytes. If gain is changed then this data set is using previous gain.
+    I2C_ReadMultiBytesOneReg(ADDRESS_HMC5583, 0x03, read_data, 6);
+
+    // print
+    // print_hex(read_data, 6);
+
+    //   Convert three 16-bit 2’s compliment hex values to decimal values and assign to X, Z, Y, respectively.
     data_X = ((read_data[0] << 8) | read_data[1]);
     data_Z = ((read_data[2] << 8) | read_data[3]);
     data_Y = ((read_data[4] << 8) | read_data[5]);
