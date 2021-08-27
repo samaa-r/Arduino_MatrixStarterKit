@@ -1,12 +1,7 @@
 #include <Wire.h>
 
-#define ADDRESS_HMC5583 0x1E
-
-#define HMC5583_REGISTER_TOTAL 13
-
-#define HMC5583_AXIS_XYZ 3
-
-// #define
+#include "hmc5883.h"
+#include "hmc5883_reg.h"
 
 void setup() {
     // Initial I2C.
@@ -39,14 +34,14 @@ void continuous_measurement_mode(void) {
     // 2. Write CRB (0x01) – value 0xA0 (Gain=5, or any other desired gain)
     // 3. Write Mode (0x02) – value 0x00 (Continuous-measurement mode)
     uint8_t ary_cmd[] = {
-        0x70,
-        0xA0,
-        0x00,
+        (HMC5883_CRA_MA_8_AVG | HMC5883_CRA_DO_15_HZ | HMC5883_CRA_MS_NORMAL),  // 0x70,
+        HMC5883_CRB_GN_390,                                                     // 0xA0,
+        HMC5883_MR_HS_DISABLE,                                                  // 0x00,
     };
     const int len = sizeof(ary_cmd) / sizeof(ary_cmd[0]);
 
     // Point to first data register CRA (0x00).
-    I2C_WriteMultiBytesOneReg(ADDRESS_HMC5583, 0x00, ary_cmd, len);
+    I2C_WriteMultiBytesOneReg(ADDRESS_HMC5583, HMC5883_ADDR_CRA, ary_cmd, len);
 
     // 4. Wait 6 ms or monitor status register or DRDY hardware interrupt pin
     delay(6);
@@ -59,7 +54,7 @@ void continuous_measurement_mode(void) {
     while (1) {
         // Point to first data register DXRA (0x03).
         // Read all 6 bytes. If gain is changed then this data set is using previous gain.
-        I2C_ReadMultiBytesOneReg(ADDRESS_HMC5583, 0x03, read_data, 6);
+        I2C_ReadMultiBytesOneReg(ADDRESS_HMC5583, HMC5883_ADDR_DXRA, read_data, 6);
 
         // print
         // print_hex(read_data, 6);
@@ -89,13 +84,13 @@ void single_measurement_mode(void) {
     // 1. Write CRA (0x00) – value 0x70 (8-average, 15 Hz default or any other rate, normal measurement)
     // 2. Write CRB (0x01) – value 0xA0 (Gain=5, or any other desired gain)
     uint8_t ary_cmd[] = {
-        0x70,
-        0xA0,
+        (HMC5883_CRA_MA_8_AVG | HMC5883_CRA_DO_15_HZ | HMC5883_CRA_MS_NORMAL),  // 0x70,
+        HMC5883_CRB_GN_390,                                                     // 0xA0,
     };
     const int len = sizeof(ary_cmd) / sizeof(ary_cmd[0]);
 
     // Point to first data register CRA (0x00).
-    I2C_WriteMultiBytesOneReg(ADDRESS_HMC5583, 0x00, ary_cmd, len);
+    I2C_WriteMultiBytesOneReg(ADDRESS_HMC5583, HMC5883_ADDR_CRA, ary_cmd, len);
 
     // 3. For each measurement query:
     uint8_t read_data[6] = {};
@@ -105,13 +100,13 @@ void single_measurement_mode(void) {
     while (1) {
         //   Write Mode (0x02) – value 0x01 (Single-measurement mode)
         // Point to first data register CRA (0x02).
-        I2C_WriteMultiBytesOneReg(ADDRESS_HMC5583, 0x02, 0x01, 1);
+        I2C_WriteMultiBytesOneReg(ADDRESS_HMC5583, HMC5883_ADDR_MR, 0x01, 1);
 
         //   Wait 6 ms or monitor status register or DRDY hardware interrupt pin
         delay(6);
 
         // Read all 6 bytes. If gain is changed then this data set is using previous gain.
-        I2C_ReadMultiBytesOneReg(ADDRESS_HMC5583, 0x03, read_data, 6);
+        I2C_ReadMultiBytesOneReg(ADDRESS_HMC5583, HMC5883_ADDR_DXRA, read_data, 6);
 
         // print
         // print_hex(read_data, 6);
@@ -142,14 +137,14 @@ bool positive_self_test(void) {
     // 2. Write CRB (0x01) – value 0xA0 (Gain=5)
     // 3. Write Mode (0x02) – value 0x00 (Continuous-measurement mode)
     uint8_t ary_cmd[] = {
-        0x71,
-        0xA0,
-        0x00,
+        (HMC5883_CRA_MA_8_AVG | HMC5883_CRA_DO_15_HZ | HMC5883_CRA_MS_POSITIVE),  // 0x71,
+        HMC5883_CRB_GN_390,                                                       // 0xA0,
+        HMC5883_MR_HS_DISABLE,                                                    // 0x00,
     };
     const int len = sizeof(ary_cmd) / sizeof(ary_cmd[0]);
 
     // Point to first data register CRA (0x00).
-    I2C_WriteMultiBytesOneReg(ADDRESS_HMC5583, 0x00, ary_cmd, len);
+    I2C_WriteMultiBytesOneReg(ADDRESS_HMC5583, HMC5883_ADDR_CRA, ary_cmd, len);
 
     // 4. Wait 6 ms or monitor status register or DRDY hardware interrupt pin
     delay(6);
@@ -164,7 +159,7 @@ bool positive_self_test(void) {
     for (int i = 0; i < avg_time; i++) {
         // Point to first data register DXRA (0x03).
         // Read all 6 bytes. If gain is changed then this data set is using previous gain.
-        I2C_ReadMultiBytesOneReg(ADDRESS_HMC5583, 0x03, read_data, 6);
+        I2C_ReadMultiBytesOneReg(ADDRESS_HMC5583, HMC5883_ADDR_DXRA, read_data, 6);
 
         // Convert three 16-bit 2’s compliment hex values to decimal values and assign to X, Z, Y, respectively.
         data_X = ((read_data[0] << 8) | read_data[1]);

@@ -15,14 +15,20 @@
    @{
 */
 
+#define ADDRESS_HMC5583 0x1E
+
+#define HMC5583_REGISTER_TOTAL 13
+
+#define HMC5583_AXIS_XYZ 3
+
 /**
     @addtogroup HMC5883 Controller
     Memory Mapped Structure for HMC5883 Controller
 @{ */
 
-typedef struct
-{
-    /**
+// typedef struct
+// {
+/**
      * @var HMC5883::CRA
      * Offset: 0x00  Configuration Register A
      * ---------------------------------------------------------------------------------------------------
@@ -147,20 +153,20 @@ typedef struct
      * | :----: | :----:   | :---- |
      * |[7:0]   |IRC       |ASCII value 3 
      */
-    __IO uint8_t CRA; /*!< [0x00] HMC5883 Configuration Register A                                   */
-    __IO uint8_t CRB; /*!< [0x01] HMC5883 Configuration Register B                                   */
-    __IO uint8_t MR;  /*!< [0x02] HMC5883 Mode Register                                              */
-    __O uint8_t DXRA; /*!< [0x03] HMC5883 Data Output X MSB Register                                 */
-    __O uint8_t DXRB; /*!< [0x04] HMC5883 Data Output X LSB Register                                 */
-    __O uint8_t DZRA; /*!< [0x05] HMC5883 Data Output Z MSB Register                                 */
-    __O uint8_t DZRB; /*!< [0x06] HMC5883 Data Output Z LSB Register                                 */
-    __O uint8_t DYRA; /*!< [0x07] HMC5883 Data Output Y MSB Register                                 */
-    __O uint8_t DYRB; /*!< [0x08] HMC5883 Data Output Y LSB Register                                 */
-    __O uint8_t SR;   /*!< [0x09] HMC5883 Status Register                                            */
-    __O uint8_t IRA;  /*!< [0x0A] HMC5883 Identification Register A                                  */
-    __O uint8_t IRB;  /*!< [0x0B] HMC5883 Identification Register B                                  */
-    __O uint8_t IRC;  /*!< [0x0C] HMC5883 Identification Register C                                  */
-} HMC5883_T;
+//     __IO uint8_t CRA; /*!< [0x00] HMC5883 Configuration Register A                                   */
+//     __IO uint8_t CRB; /*!< [0x01] HMC5883 Configuration Register B                                   */
+//     __IO uint8_t MR;  /*!< [0x02] HMC5883 Mode Register                                              */
+//     __O uint8_t DXRA; /*!< [0x03] HMC5883 Data Output X MSB Register                                 */
+//     __O uint8_t DXRB; /*!< [0x04] HMC5883 Data Output X LSB Register                                 */
+//     __O uint8_t DZRA; /*!< [0x05] HMC5883 Data Output Z MSB Register                                 */
+//     __O uint8_t DZRB; /*!< [0x06] HMC5883 Data Output Z LSB Register                                 */
+//     __O uint8_t DYRA; /*!< [0x07] HMC5883 Data Output Y MSB Register                                 */
+//     __O uint8_t DYRB; /*!< [0x08] HMC5883 Data Output Y LSB Register                                 */
+//     __O uint8_t SR;   /*!< [0x09] HMC5883 Status Register                                            */
+//     __O uint8_t IRA;  /*!< [0x0A] HMC5883 Identification Register A                                  */
+//     __O uint8_t IRB;  /*!< [0x0B] HMC5883 Identification Register B                                  */
+//     __O uint8_t IRC;  /*!< [0x0C] HMC5883 Identification Register C                                  */
+// } HMC5883_T;
 
 /**
     @addtogroup HMC5883_CONST HMC5883 Bit Field Definition
